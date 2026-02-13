@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Lock, User, Activity, GraduationCap } from "lucide-react"
+import { Lock, User, GraduationCap } from "lucide-react"
+import Image from "next/image"
 
 interface LoginScreenProps {
   onLogin: (role: "admin" | "student", matricula?: string) => void
@@ -56,12 +57,17 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo / Brand */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <Activity className="h-8 w-8" />
-          </div>
+          <Image
+            src="/images/logo.png"
+            alt="Logo Centro Olimpico UnB"
+            width={72}
+            height={72}
+            className="h-18 w-18 object-contain"
+            priority
+          />
           <div className="text-center">
             <h1 className="font-heading text-2xl font-bold text-foreground">
-              SportsCampus
+              Centro Olimpico UnB
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Gerenciamento de Areas Esportivas

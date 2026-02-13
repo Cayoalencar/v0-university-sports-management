@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans' })
 
 export const metadata: Metadata = {
-  title: 'SportsCampus - Gerenciamento Esportivo',
-  description: 'Sistema de gerenciamento para uso das areas esportivas da universidade',
+  title: 'Centro Olimpico UnB - Gerenciamento Esportivo',
+  description: 'Sistema de gerenciamento para uso das areas esportivas do Centro Olimpico da UnB',
 }
 
 export default function RootLayout({

@@ -6,7 +6,8 @@ import { LoginScreen } from "@/components/login-screen"
 import { StudentCardScreen } from "@/components/student-card-screen"
 import { RegisterStudentScreen } from "@/components/register-student-screen"
 import { Button } from "@/components/ui/button"
-import { Activity, CreditCard, UserPlus, LogOut } from "lucide-react"
+import { CreditCard, UserPlus, LogOut } from "lucide-react"
+import Image from "next/image"
 
 type Screen = "carteirinha" | "cadastro"
 
@@ -48,11 +49,15 @@ export function AppShell() {
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
             {/* Brand */}
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Activity className="h-5 w-5" />
-              </div>
-              <span className="font-heading text-lg font-bold text-foreground">
-                SportsCampus
+              <Image
+                src="/images/logo.png"
+                alt="Logo Centro Olimpico UnB"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain"
+              />
+              <span className="hidden font-heading text-lg font-bold text-foreground sm:block">
+                Centro Olimpico UnB
               </span>
             </div>
 
@@ -110,7 +115,7 @@ export function AppShell() {
         {/* Footer */}
         <footer className="border-t border-border bg-card py-4">
           <p className="text-center text-xs text-muted-foreground">
-            SportsCampus - Sistema de Gerenciamento de Areas Esportivas
+            Centro Olimpico UnB - Sistema de Gerenciamento de Areas Esportivas
           </p>
         </footer>
       </div>
