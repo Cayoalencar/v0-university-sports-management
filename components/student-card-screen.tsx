@@ -38,10 +38,10 @@ function StudentCardView({ student }: { student: Student }) {
             <Activity className="h-6 w-6 text-primary-foreground" />
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/80">
-                Universidade
+                Universidade de Brasilia
               </p>
               <p className="font-heading text-lg font-bold text-primary-foreground">
-                SportsCampus
+                Centro Olimpico UnB
               </p>
             </div>
           </div>
