@@ -148,45 +148,41 @@ export function RegisterStudentScreen() {
           {students.map((student) => {
             const valido = isAtestadoValido(student.vencimentoAtestado)
             return (
-              <Card key={student.id} className="border-border/60">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${valido ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
-                    <GraduationCap className="h-5 w-5" />
+              <div
+                key={student.id}
+                className="flex items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm"
+              >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${valido ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-foreground">{student.nome}</p>
+                  <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="font-mono">{student.matricula}</span>
+                    <span className="flex items-center gap-1">
+                      <CalendarClock className="h-3 w-3" />
+                      {formatDate(student.vencimentoAtestado)}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground">{student.nome}</p>
-                    <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="font-mono">{student.matricula}</span>
-                      <span className="flex items-center gap-1">
-                        <CalendarClock className="h-3 w-3" />
-                        {formatDate(student.vencimentoAtestado)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        valido
-                          ? "bg-primary/10 text-primary"
-                          : "bg-destructive/10 text-destructive"
-                      }`}
-                    >
-                      {valido ? "Valido" : "Vencido"}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setEditingStudent(student)}
-                      className="h-8 w-8 shrink-0 rounded-full border-border"
-                      aria-label={`Editar ${student.nome}`}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    valido
+                      ? "bg-primary/10 text-primary"
+                      : "bg-destructive/10 text-destructive"
+                  }`}
+                >
+                  {valido ? "Valido" : "Vencido"}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(student)}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-secondary hover:bg-secondary hover:text-secondary-foreground"
+                  aria-label={`Editar ${student.nome}`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              </div>
             )
           })}
         </div>
