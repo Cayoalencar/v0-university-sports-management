@@ -6,6 +6,7 @@ import type { Student } from "./types"
 interface StudentsContextType {
   students: Student[]
   addStudent: (student: Omit<Student, "id" | "createdAt">) => void
+  updateStudent: (id: string, data: Partial<Omit<Student, "id" | "createdAt">>) => void
   getStudentByMatricula: (matricula: string) => Student | undefined
 }
 
@@ -47,12 +48,18 @@ export function StudentsProvider({ children }: { children: ReactNode }) {
     setStudents((prev) => [...prev, newStudent])
   }
 
+  function updateStudent(id: string, data: Partial<Omit<Student, "id" | "createdAt">>) {
+    setStudents((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...data } : s))
+    )
+  }
+
   function getStudentByMatricula(matricula: string) {
     return students.find((s) => s.matricula === matricula)
   }
 
   return (
-    <StudentsContext.Provider value={{ students, addStudent, getStudentByMatricula }}>
+    <StudentsContext.Provider value={{ students, addStudent, updateStudent, getStudentByMatricula }}>
       {children}
     </StudentsContext.Provider>
   )

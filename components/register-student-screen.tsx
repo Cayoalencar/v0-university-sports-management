@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
-import { UserPlus, CheckCircle2, Users, GraduationCap, CalendarClock, Trash2 } from "lucide-react"
+import { UserPlus, CheckCircle2, Users, GraduationCap, CalendarClock, Pencil } from "lucide-react"
+import { EditStudentModal } from "@/components/edit-student-modal"
+import type { Student } from "@/lib/types"
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "T00:00:00")
@@ -22,12 +24,18 @@ function isAtestadoValido(vencimento: string) {
 }
 
 export function RegisterStudentScreen() {
-  const { students, addStudent } = useStudents()
+  const { students, addStudent, updateStudent } = useStudents()
   const [nome, setNome] = useState("")
   const [matricula, setMatricula] = useState("")
   const [vencimentoAtestado, setVencimentoAtestado] = useState("")
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+
+  function handleSaveEdit(id: string, data: { nome: string; matricula: string; vencimentoAtestado: string }) {
+    updateStudent(id, data)
+    setEditingStudent(null)
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -155,14 +163,24 @@ export function RegisterStudentScreen() {
                       </span>
                     </div>
                   </div>
-                  <div
-                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      valido
-                        ? "bg-primary/10 text-primary"
-                        : "bg-destructive/10 text-destructive"
-                    }`}
-                  >
-                    {valido ? "Valido" : "Vencido"}
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        valido
+                          ? "bg-primary/10 text-primary"
+                          : "bg-destructive/10 text-destructive"
+                      }`}
+                    >
+                      {valido ? "Valido" : "Vencido"}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingStudent(student)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/10 hover:text-secondary"
+                      aria-label={`Editar ${student.nome}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
                   </div>
                 </CardContent>
               </Card>
@@ -170,6 +188,15 @@ export function RegisterStudentScreen() {
           })}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingStudent && (
+        <EditStudentModal
+          student={editingStudent}
+          onSave={handleSaveEdit}
+          onClose={() => setEditingStudent(null)}
+        />
+      )}
     </div>
   )
 }
