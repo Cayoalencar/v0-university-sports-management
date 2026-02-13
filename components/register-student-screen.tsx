@@ -173,14 +173,17 @@ export function RegisterStudentScreen() {
                     >
                       {valido ? "Valido" : "Vencido"}
                     </div>
-                    <button
+
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon"
                       onClick={() => setEditingStudent(student)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/10 hover:text-secondary"
+                      className="h-8 w-8 shrink-0 rounded-full border-border"
                       aria-label={`Editar ${student.nome}`}
                     >
-                      <Pencil className="h-4 w-4" />
-                    </button>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
