@@ -5,32 +5,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Lock, User, Activity } from "lucide-react"
+import { Lock, User, Activity, GraduationCap } from "lucide-react"
 
 interface LoginScreenProps {
-  onLogin: (role: "admin" | "student") => void
+  onLogin: (role: "admin" | "student", matricula?: string) => void
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [matricula, setMatricula] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
   const [error, setError] = useState("")
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
 
-    if (!email || !password) {
-      setError("Preencha todos os campos.")
-      return
-    }
-
-    if (email === "admin@universidade.edu.br" && password === "admin123") {
-      onLogin("admin")
-    } else if (password === "aluno123") {
-      onLogin("student")
+    if (isAdmin) {
+      if (!email || !password) {
+        setError("Preencha todos os campos.")
+        return
+      }
+      if (email === "admin@universidade.edu.br" && password === "admin123") {
+        onLogin("admin")
+      } else {
+        setError("Credenciais de administrador invalidas.")
+      }
     } else {
-      setError("Credenciais invalidas. Tente novamente.")
+      if (!matricula || !password) {
+        setError("Preencha todos os campos.")
+        return
+      }
+      if (password === "aluno123") {
+        onLogin("student", matricula.trim())
+      } else {
+        setError("Senha invalida. Tente novamente.")
+      }
     }
   }
 
@@ -66,21 +77,64 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Role toggle tabs */}
+            <div className="mb-5 flex rounded-lg border border-border bg-muted/50 p-1">
+              <button
+                type="button"
+                onClick={() => { setIsAdmin(false); setError("") }}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  !isAdmin
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Aluno
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsAdmin(true); setError("") }}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  isAdmin
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Administrador
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email">E-mail Institucional</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu.email@universidade.edu.br"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                  />
+              {isAdmin ? (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email">E-mail Institucional</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="admin@universidade.edu.br"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="matricula">Matricula</Label>
+                  <div className="relative">
+                    <GraduationCap className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="matricula"
+                      type="text"
+                      placeholder="Ex: 2024001"
+                      value={matricula}
+                      onChange={(e) => setMatricula(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="password">Senha</Label>
@@ -118,7 +172,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   </p>
                   <p>
                     <span className="font-medium text-foreground">Aluno:</span>{" "}
-                    qualquer email / aluno123
+                    matricula cadastrada / aluno123
                   </p>
                 </div>
               </div>

@@ -114,11 +114,21 @@ function StudentCardView({ student }: { student: Student }) {
   )
 }
 
-export function StudentCardScreen() {
+interface StudentCardScreenProps {
+  role: "admin" | "student"
+  studentMatricula: string | null
+}
+
+export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenProps) {
   const { students, getStudentByMatricula } = useStudents()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [error, setError] = useState("")
+
+  // If student role, find their own card directly
+  const loggedStudent = role === "student" && studentMatricula
+    ? getStudentByMatricula(studentMatricula)
+    : null
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -138,6 +148,39 @@ export function StudentCardScreen() {
     }
   }
 
+  // Student view: show only their own card
+  if (role === "student") {
+    return (
+      <div className="flex flex-col gap-8">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="mb-6">
+            <h2 className="font-heading text-2xl font-bold text-foreground">Minha Carteirinha</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Sua carteirinha digital para acesso as areas esportivas
+            </p>
+          </div>
+        </div>
+
+        {loggedStudent ? (
+          <StudentCardView student={loggedStudent} />
+        ) : (
+          <div className="mx-auto w-full max-w-sm">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-6 text-center">
+              <ShieldAlert className="mx-auto mb-2 h-8 w-8 text-destructive" />
+              <p className="text-sm font-medium text-destructive">
+                Matricula nao encontrada no sistema.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Verifique sua matricula ou entre em contato com a administracao.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Admin view: search any student
   return (
     <div className="flex flex-col gap-8">
       {/* Search section */}

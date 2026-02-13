@@ -13,10 +13,14 @@ type Screen = "carteirinha" | "cadastro"
 export function AppShell() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [role, setRole] = useState<"admin" | "student">("student")
+  const [studentMatricula, setStudentMatricula] = useState<string | null>(null)
   const [currentScreen, setCurrentScreen] = useState<Screen>("carteirinha")
 
-  function handleLogin(userRole: "admin" | "student") {
+  function handleLogin(userRole: "admin" | "student", matricula?: string) {
     setRole(userRole)
+    if (userRole === "student" && matricula) {
+      setStudentMatricula(matricula)
+    }
     setLoggedIn(true)
     setCurrentScreen("carteirinha")
   }
@@ -24,6 +28,7 @@ export function AppShell() {
   function handleLogout() {
     setLoggedIn(false)
     setRole("student")
+    setStudentMatricula(null)
     setCurrentScreen("carteirinha")
   }
 
@@ -77,9 +82,16 @@ export function AppShell() {
 
             {/* User info + logout */}
             <div className="flex items-center gap-3">
-              <span className="hidden text-xs font-medium text-muted-foreground sm:block">
-                {role === "admin" ? "Administrador" : "Aluno"}
-              </span>
+              <div className="hidden flex-col items-end sm:flex">
+                <span className="text-xs font-medium text-foreground">
+                  {role === "admin" ? "Administrador" : "Aluno"}
+                </span>
+                {role === "student" && studentMatricula && (
+                  <span className="text-[10px] text-muted-foreground">
+                    Mat. {studentMatricula}
+                  </span>
+                )}
+              </div>
               <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair do sistema">
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -89,7 +101,9 @@ export function AppShell() {
 
         {/* Main Content */}
         <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8">
-          {currentScreen === "carteirinha" && <StudentCardScreen />}
+          {currentScreen === "carteirinha" && (
+              <StudentCardScreen role={role} studentMatricula={studentMatricula} />
+            )}
           {currentScreen === "cadastro" && role === "admin" && <RegisterStudentScreen />}
         </main>
 
