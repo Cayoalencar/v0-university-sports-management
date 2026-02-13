@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
-import { Search, User, GraduationCap, CalendarClock, ShieldCheck, ShieldAlert, Activity } from "lucide-react"
+import { Search, User, GraduationCap, CalendarClock, ShieldCheck, ShieldAlert, Activity, X } from "lucide-react"
 import type { Student } from "@/lib/types"
 
 function isAtestadoValido(vencimento: string) {
@@ -241,7 +241,23 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
       </div>
 
       {/* Card display */}
-      {selectedStudent && <StudentCardView student={selectedStudent} />}
+      {selectedStudent && (
+        <div className="relative mx-auto w-full max-w-sm">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              setSelectedStudent(null)
+              setSearchQuery("")
+            }}
+            className="absolute -top-2 right-0 z-10 h-8 w-8 rounded-full border-border bg-card shadow-md hover:bg-destructive hover:text-destructive-foreground"
+            aria-label="Fechar carteirinha"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <StudentCardView student={selectedStudent} />
+        </div>
+      )}
     </div>
   )
 }
