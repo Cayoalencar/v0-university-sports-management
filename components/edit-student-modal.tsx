@@ -10,15 +10,18 @@ import type { Student } from "@/lib/types"
 
 interface EditStudentModalProps {
   student: Student
-  onSave: (id: string, data: { nome: string; matricula: string; vencimentoAtestado: string }) => void
+  onSave: (id: string, data: { nome: string; matricula: string; cpf?: string; vencimentoAtestado: string }) => void
   onClose: () => void
 }
 
 export function EditStudentModal({ student, onSave, onClose }: EditStudentModalProps) {
   const [nome, setNome] = useState(student.nome)
   const [matricula, setMatricula] = useState(student.matricula)
+  const [cpf, setCpf] = useState(student.cpf || "")
   const [vencimentoAtestado, setVencimentoAtestado] = useState(student.vencimentoAtestado)
   const [error, setError] = useState("")
+
+  const isNatacao = student.tipo === "natacao"
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -32,14 +35,25 @@ export function EditStudentModal({ student, onSave, onClose }: EditStudentModalP
     e.preventDefault()
     setError("")
 
-    if (!nome.trim() || !matricula.trim() || !vencimentoAtestado) {
+    if (!nome.trim() || !vencimentoAtestado) {
       setError("Preencha todos os campos.")
+      return
+    }
+
+    if (isNatacao && !cpf.trim()) {
+      setError("Preencha o CPF.")
+      return
+    }
+
+    if (!isNatacao && !matricula.trim()) {
+      setError("Preencha a matricula.")
       return
     }
 
     onSave(student.id, {
       nome: nome.trim(),
       matricula: matricula.trim(),
+      cpf: cpf.trim() || undefined,
       vencimentoAtestado,
     })
   }
@@ -80,15 +94,27 @@ export function EditStudentModal({ student, onSave, onClose }: EditStudentModalP
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="edit-matricula">Matricula</Label>
-              <Input
-                id="edit-matricula"
-                placeholder="Ex: 2024004"
-                value={matricula}
-                onChange={(e) => setMatricula(e.target.value)}
-              />
-            </div>
+            {isNatacao ? (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="edit-cpf">CPF</Label>
+                <Input
+                  id="edit-cpf"
+                  placeholder="Ex: 123.456.789-00"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="edit-matricula">Matricula</Label>
+                <Input
+                  id="edit-matricula"
+                  placeholder="Ex: 2024004"
+                  value={matricula}
+                  onChange={(e) => setMatricula(e.target.value)}
+                />
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="edit-vencimento">Vencimento do Atestado Medico</Label>

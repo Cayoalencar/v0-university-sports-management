@@ -8,19 +8,22 @@ import { RegisterStudentScreen } from "@/components/register-student-screen"
 import { Button } from "@/components/ui/button"
 import { CreditCard, UserPlus, LogOut } from "lucide-react"
 import Image from "next/image"
+import type { StudentTipo } from "@/lib/types"
 
 type Screen = "carteirinha" | "cadastro"
 
 export function AppShell() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [role, setRole] = useState<"admin" | "student">("student")
-  const [studentMatricula, setStudentMatricula] = useState<string | null>(null)
+  const [studentIdentifier, setStudentIdentifier] = useState<string | null>(null)
+  const [studentTipo, setStudentTipo] = useState<StudentTipo>("estudante")
   const [currentScreen, setCurrentScreen] = useState<Screen>("carteirinha")
 
-  function handleLogin(userRole: "admin" | "student", matricula?: string) {
+  function handleLogin(userRole: "admin" | "student", identifier?: string, tipo?: StudentTipo) {
     setRole(userRole)
-    if (userRole === "student" && matricula) {
-      setStudentMatricula(matricula)
+    if (userRole === "student" && identifier) {
+      setStudentIdentifier(identifier)
+      setStudentTipo(tipo || "estudante")
     }
     setLoggedIn(true)
     setCurrentScreen("carteirinha")
@@ -29,7 +32,8 @@ export function AppShell() {
   function handleLogout() {
     setLoggedIn(false)
     setRole("student")
-    setStudentMatricula(null)
+    setStudentIdentifier(null)
+    setStudentTipo("estudante")
     setCurrentScreen("carteirinha")
   }
 
@@ -91,9 +95,9 @@ export function AppShell() {
                 <span className="text-xs font-medium text-foreground">
                   {role === "admin" ? "Administrador" : "Aluno"}
                 </span>
-                {role === "student" && studentMatricula && (
+                {role === "student" && studentIdentifier && (
                   <span className="text-[10px] text-muted-foreground">
-                    Mat. {studentMatricula}
+                    {studentTipo === "natacao" ? "CPF" : "Mat."} {studentIdentifier}
                   </span>
                 )}
               </div>
@@ -107,7 +111,7 @@ export function AppShell() {
         {/* Main Content */}
         <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8">
           {currentScreen === "carteirinha" && (
-              <StudentCardScreen role={role} studentMatricula={studentMatricula} />
+              <StudentCardScreen role={role} studentIdentifier={studentIdentifier} studentTipo={studentTipo} />
             )}
           {currentScreen === "cadastro" && role === "admin" && <RegisterStudentScreen />}
         </main>

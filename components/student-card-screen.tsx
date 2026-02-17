@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
-import { Search, User, GraduationCap, CalendarClock, ShieldCheck, ShieldAlert, Activity, X } from "lucide-react"
-import type { Student } from "@/lib/types"
+import { Search, User, GraduationCap, CalendarClock, ShieldCheck, ShieldAlert, Activity, X, Waves } from "lucide-react"
+import type { Student, StudentTipo } from "@/lib/types"
 
 function isAtestadoValido(vencimento: string) {
   return new Date(vencimento) >= new Date()
@@ -24,23 +24,28 @@ function formatDate(dateStr: string) {
 
 function StudentCardView({ student }: { student: Student }) {
   const valido = isAtestadoValido(student.vencimentoAtestado)
+  const isNatacao = student.tipo === "natacao"
 
   return (
     <div className="mx-auto w-full max-w-sm">
       <Card className="overflow-hidden border-0 shadow-xl">
-        {/* Card Header - green/blue gradient-like top stripe */}
-        <div className="relative bg-primary px-6 pb-12 pt-6">
+        {/* Card Header */}
+        <div className={`relative px-6 pb-12 pt-6 ${isNatacao ? "bg-secondary" : "bg-primary"}`}>
           {/* Decorative circles */}
-          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-secondary/20" />
-          <div className="absolute -bottom-4 left-8 h-16 w-16 rounded-full bg-accent/20" />
+          <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${isNatacao ? "bg-primary/20" : "bg-secondary/20"}`} />
+          <div className={`absolute -bottom-4 left-8 h-16 w-16 rounded-full ${isNatacao ? "bg-primary/20" : "bg-accent/20"}`} />
 
           <div className="relative flex items-center gap-3">
-            <Activity className="h-6 w-6 text-primary-foreground" />
+            {isNatacao ? (
+              <Waves className="h-6 w-6 text-secondary-foreground" />
+            ) : (
+              <Activity className="h-6 w-6 text-primary-foreground" />
+            )}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/80">
-                Universidade de Brasilia
+              <p className={`text-xs font-semibold uppercase tracking-wider ${isNatacao ? "text-secondary-foreground/80" : "text-primary-foreground/80"}`}>
+                {isNatacao ? "Clube de Natacao" : "Universidade de Brasilia"}
               </p>
-              <p className="font-heading text-lg font-bold text-primary-foreground">
+              <p className={`font-heading text-lg font-bold ${isNatacao ? "text-secondary-foreground" : "text-primary-foreground"}`}>
                 Centro Olimpico UnB
               </p>
             </div>
@@ -49,8 +54,8 @@ function StudentCardView({ student }: { student: Student }) {
 
         {/* Avatar overlapping */}
         <div className="relative -mt-8 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-secondary text-secondary-foreground shadow-md">
-            <User className="h-8 w-8" />
+          <div className={`flex h-16 w-16 items-center justify-center rounded-full border-4 border-card shadow-md ${isNatacao ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
+            {isNatacao ? <Waves className="h-8 w-8" /> : <User className="h-8 w-8" />}
           </div>
         </div>
 
@@ -61,21 +66,33 @@ function StudentCardView({ student }: { student: Student }) {
               {student.nome}
             </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Aluno(a) - Areas Esportivas
+              {isNatacao ? "Membro - Clube de Natacao" : "Aluno(a) - Areas Esportivas"}
             </p>
           </div>
 
           {/* Info rows */}
           <div className="flex w-full flex-col gap-3">
-            <div className="flex items-center gap-3 rounded-lg bg-muted/60 px-4 py-3">
-              <GraduationCap className="h-5 w-5 shrink-0 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Matricula</p>
-                <p className="font-mono text-sm font-semibold text-foreground">
-                  {student.matricula}
-                </p>
+            {isNatacao ? (
+              <div className="flex items-center gap-3 rounded-lg bg-muted/60 px-4 py-3">
+                <User className="h-5 w-5 shrink-0 text-secondary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">CPF</p>
+                  <p className="font-mono text-sm font-semibold text-foreground">
+                    {student.cpf}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3 rounded-lg bg-muted/60 px-4 py-3">
+                <GraduationCap className="h-5 w-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Matricula</p>
+                  <p className="font-mono text-sm font-semibold text-foreground">
+                    {student.matricula}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-3 rounded-lg bg-muted/60 px-4 py-3">
               <CalendarClock className="h-5 w-5 shrink-0 text-secondary" />
@@ -116,18 +133,19 @@ function StudentCardView({ student }: { student: Student }) {
 
 interface StudentCardScreenProps {
   role: "admin" | "student"
-  studentMatricula: string | null
+  studentIdentifier: string | null
+  studentTipo: StudentTipo
 }
 
-export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenProps) {
-  const { students, getStudentByMatricula } = useStudents()
+export function StudentCardScreen({ role, studentIdentifier, studentTipo }: StudentCardScreenProps) {
+  const { students, getStudentByMatricula, getStudentByCpf } = useStudents()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [error, setError] = useState("")
 
   // If student role, find their own card directly
-  const loggedStudent = role === "student" && studentMatricula
-    ? getStudentByMatricula(studentMatricula)
+  const loggedStudent = role === "student" && studentIdentifier
+    ? (studentTipo === "natacao" ? getStudentByCpf(studentIdentifier) : getStudentByMatricula(studentIdentifier))
     : null
 
   function handleSearch(e: React.FormEvent) {
@@ -136,15 +154,16 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
     setSelectedStudent(null)
 
     if (!searchQuery.trim()) {
-      setError("Digite uma matricula para buscar.")
+      setError("Digite uma matricula ou CPF para buscar.")
       return
     }
 
-    const found = getStudentByMatricula(searchQuery.trim())
+    const q = searchQuery.trim()
+    const found = getStudentByMatricula(q) || getStudentByCpf(q)
     if (found) {
       setSelectedStudent(found)
     } else {
-      setError("Nenhum aluno encontrado com essa matricula.")
+      setError("Nenhum aluno encontrado com essa matricula ou CPF.")
     }
   }
 
@@ -168,10 +187,10 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-6 text-center">
               <ShieldAlert className="mx-auto mb-2 h-8 w-8 text-destructive" />
               <p className="text-sm font-medium text-destructive">
-                Matricula nao encontrada no sistema.
+                {studentTipo === "natacao" ? "CPF" : "Matricula"} nao encontrado(a) no sistema.
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Verifique sua matricula ou entre em contato com a administracao.
+                Verifique seus dados ou entre em contato com a administracao.
               </p>
             </div>
           </div>
@@ -188,19 +207,19 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
         <div className="mb-6">
           <h2 className="font-heading text-2xl font-bold text-foreground">Carteirinha Digital</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Busque pelo numero de matricula do aluno
+            Busque pelo numero de matricula ou CPF
           </p>
         </div>
 
         <form onSubmit={handleSearch} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="search-matricula">Matricula</Label>
+            <Label htmlFor="search-id">Matricula ou CPF</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  id="search-matricula"
-                  placeholder="Ex: 2024001"
+                  id="search-id"
+                  placeholder="Ex: 2024001 ou 123.456.789-00"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -218,7 +237,7 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
         {!selectedStudent && (
           <div className="mt-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Matriculas cadastradas
+              Cadastrados
             </p>
             <div className="flex flex-wrap gap-2">
               {students.map((s) => (
@@ -226,13 +245,21 @@ export function StudentCardScreen({ role, studentMatricula }: StudentCardScreenP
                   key={s.id}
                   type="button"
                   onClick={() => {
-                    setSearchQuery(s.matricula)
+                    setSearchQuery(s.tipo === "natacao" ? s.cpf || "" : s.matricula)
                     setSelectedStudent(s)
                     setError("")
                   }}
-                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted ${
+                    s.tipo === "natacao"
+                      ? "border-secondary/30 bg-secondary/5 text-foreground"
+                      : "border-border bg-card text-foreground"
+                  }`}
                 >
-                  {s.matricula} - {s.nome.split(" ")[0]}
+                  {s.tipo === "natacao" ? (
+                    <>{s.cpf} - {s.nome.split(" ")[0]}</>
+                  ) : (
+                    <>{s.matricula} - {s.nome.split(" ")[0]}</>
+                  )}
                 </button>
               ))}
             </div>

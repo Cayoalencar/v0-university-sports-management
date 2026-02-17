@@ -5,18 +5,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Lock, User, GraduationCap } from "lucide-react"
+import { Lock, User, GraduationCap, BookOpen, Waves, ArrowLeft } from "lucide-react"
 import Image from "next/image"
+import type { StudentTipo } from "@/lib/types"
 
 interface LoginScreenProps {
-  onLogin: (role: "admin" | "student", matricula?: string) => void
+  onLogin: (role: "admin" | "student", identifier?: string, studentTipo?: StudentTipo) => void
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [matricula, setMatricula] = useState("")
+  const [identifier, setIdentifier] = useState("") // matricula ou cpf
   const [isAdmin, setIsAdmin] = useState(false)
+  const [studentTipo, setStudentTipo] = useState<StudentTipo | null>(null)
   const [error, setError] = useState("")
 
   function handleSubmit(e: React.FormEvent) {
@@ -34,16 +36,23 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         setError("Credenciais de administrador invalidas.")
       }
     } else {
-      if (!matricula || !password) {
+      if (!identifier || !password) {
         setError("Preencha todos os campos.")
         return
       }
       if (password === "aluno123") {
-        onLogin("student", matricula.trim())
+        onLogin("student", identifier.trim(), studentTipo!)
       } else {
         setError("Senha invalida. Tente novamente.")
       }
     }
+  }
+
+  function handleBackToSelection() {
+    setStudentTipo(null)
+    setIdentifier("")
+    setPassword("")
+    setError("")
   }
 
   return (
@@ -87,7 +96,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             <div className="mb-5 flex rounded-lg border border-border bg-muted/50 p-1">
               <button
                 type="button"
-                onClick={() => { setIsAdmin(false); setError("") }}
+                onClick={() => { setIsAdmin(false); setStudentTipo(null); setError("") }}
                 className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   !isAdmin
                     ? "bg-primary text-primary-foreground shadow-sm"
@@ -98,7 +107,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               </button>
               <button
                 type="button"
-                onClick={() => { setIsAdmin(true); setError("") }}
+                onClick={() => { setIsAdmin(true); setStudentTipo(null); setError("") }}
                 className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   isAdmin
                     ? "bg-primary text-primary-foreground shadow-sm"
@@ -109,8 +118,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              {isAdmin ? (
+            {/* ADMIN form */}
+            {isAdmin && (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="email">E-mail Institucional</Label>
                   <div className="relative">
@@ -125,64 +135,160 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                     />
                   </div>
                 </div>
-              ) : (
+
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="matricula">Matricula</Label>
+                  <Label htmlFor="password-admin">Senha</Label>
                   <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="matricula"
-                      type="text"
-                      placeholder="Ex: 2024001"
-                      value={matricula}
-                      onChange={(e) => setMatricula(e.target.value)}
+                      id="password-admin"
+                      type="password"
+                      placeholder="Digite sua senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="pl-10"
                     />
                   </div>
                 </div>
-              )}
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="password">Senha</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Digite sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                  />
+                {error && (
+                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+                )}
+
+                <Button type="submit" size="lg" className="w-full text-base font-semibold">
+                  Entrar
+                </Button>
+              </form>
+            )}
+
+            {/* ALUNO: tipo selection (two big cards) */}
+            {!isAdmin && !studentTipo && (
+              <div className="flex flex-col gap-4">
+                <p className="text-center text-sm text-muted-foreground">Selecione o tipo de acesso:</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Estudante - Verde */}
+                  <button
+                    type="button"
+                    onClick={() => { setStudentTipo("estudante"); setError("") }}
+                    className="group flex flex-col items-center gap-3 rounded-xl border-2 border-transparent bg-[hsl(152,55%,28%)] p-6 text-white shadow-md transition-all hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[hsl(152,55%,28%)] focus:ring-offset-2"
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+                      <BookOpen className="h-7 w-7" />
+                    </div>
+                    <span className="text-base font-bold">Estudante</span>
+                  </button>
+
+                  {/* Clube de Natacao - Azul */}
+                  <button
+                    type="button"
+                    onClick={() => { setStudentTipo("natacao"); setError("") }}
+                    className="group flex flex-col items-center gap-3 rounded-xl border-2 border-transparent bg-[hsl(210,65%,48%)] p-6 text-white shadow-md transition-all hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[hsl(210,65%,48%)] focus:ring-offset-2"
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+                      <Waves className="h-7 w-7" />
+                    </div>
+                    <span className="text-base font-bold">Clube de Natacao</span>
+                  </button>
                 </div>
               </div>
+            )}
 
-              {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </p>
-              )}
+            {/* ALUNO: login form after selecting tipo */}
+            {!isAdmin && studentTipo && (
+              <div className="flex flex-col gap-5">
+                {/* Back button + selected type indicator */}
+                <button
+                  type="button"
+                  onClick={handleBackToSelection}
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </button>
 
-              <Button type="submit" size="lg" className="w-full text-base font-semibold">
-                Entrar
-              </Button>
-
-              <div className="mt-2 rounded-lg border border-border bg-muted/50 p-3">
-                <p className="mb-2 text-xs font-semibold text-muted-foreground">
-                  Credenciais de demonstracao:
-                </p>
-                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                  <p>
-                    <span className="font-medium text-foreground">Admin:</span>{" "}
-                    admin@universidade.edu.br / admin123
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">Aluno:</span>{" "}
-                    matricula cadastrada / aluno123
-                  </p>
+                <div className={`flex items-center gap-3 rounded-lg px-4 py-3 ${
+                  studentTipo === "estudante"
+                    ? "bg-[hsl(152,55%,28%)]/10 text-[hsl(152,55%,28%)]"
+                    : "bg-[hsl(210,65%,48%)]/10 text-[hsl(210,65%,48%)]"
+                }`}>
+                  {studentTipo === "estudante" ? (
+                    <BookOpen className="h-5 w-5" />
+                  ) : (
+                    <Waves className="h-5 w-5" />
+                  )}
+                  <span className="text-sm font-semibold">
+                    {studentTipo === "estudante" ? "Estudante" : "Clube de Natacao"}
+                  </span>
                 </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="identifier">
+                      {studentTipo === "estudante" ? "Matricula" : "CPF"}
+                    </Label>
+                    <div className="relative">
+                      {studentTipo === "estudante" ? (
+                        <GraduationCap className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      ) : (
+                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      )}
+                      <Input
+                        id="identifier"
+                        type="text"
+                        placeholder={studentTipo === "estudante" ? "Ex: 2024001" : "Ex: 123.456.789-00"}
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="password-student">Senha</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="password-student"
+                        type="password"
+                        placeholder="Digite sua senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+                  )}
+
+                  <Button type="submit" size="lg" className="w-full text-base font-semibold">
+                    Entrar
+                  </Button>
+                </form>
               </div>
-            </form>
+            )}
+
+            {/* Demo credentials */}
+            <div className="mt-5 rounded-lg border border-border bg-muted/50 p-3">
+              <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                Credenciais de demonstracao:
+              </p>
+              <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                <p>
+                  <span className="font-medium text-foreground">Admin:</span>{" "}
+                  admin@universidade.edu.br / admin123
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">Estudante:</span>{" "}
+                  matricula (ex: 2024001) / aluno123
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">Natacao:</span>{" "}
+                  CPF (ex: 123.456.789-00) / aluno123
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

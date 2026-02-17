@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
-import { UserPlus, CheckCircle2, Users, GraduationCap, CalendarClock, Pencil } from "lucide-react"
+import { UserPlus, CheckCircle2, Users, GraduationCap, CalendarClock, Pencil, Waves } from "lucide-react"
 import { EditStudentModal } from "@/components/edit-student-modal"
-import type { Student } from "@/lib/types"
+import type { Student, StudentTipo } from "@/lib/types"
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "T00:00:00")
@@ -27,12 +27,14 @@ export function RegisterStudentScreen() {
   const { students, addStudent, updateStudent } = useStudents()
   const [nome, setNome] = useState("")
   const [matricula, setMatricula] = useState("")
+  const [cpf, setCpf] = useState("")
   const [vencimentoAtestado, setVencimentoAtestado] = useState("")
+  const [tipo, setTipo] = useState<StudentTipo>("estudante")
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
-  function handleSaveEdit(id: string, data: { nome: string; matricula: string; vencimentoAtestado: string }) {
+  function handleSaveEdit(id: string, data: { nome: string; matricula: string; cpf?: string; vencimentoAtestado: string }) {
     updateStudent(id, data)
     setEditingStudent(null)
   }
@@ -42,25 +44,46 @@ export function RegisterStudentScreen() {
     setError("")
     setSuccess(false)
 
-    if (!nome.trim() || !matricula.trim() || !vencimentoAtestado) {
+    if (!nome.trim() || !vencimentoAtestado) {
       setError("Preencha todos os campos.")
       return
     }
 
-    const exists = students.find((s) => s.matricula === matricula.trim())
-    if (exists) {
-      setError("Ja existe um aluno com essa matricula.")
+    if (tipo === "estudante" && !matricula.trim()) {
+      setError("Preencha a matricula.")
       return
+    }
+
+    if (tipo === "natacao" && !cpf.trim()) {
+      setError("Preencha o CPF.")
+      return
+    }
+
+    if (tipo === "estudante") {
+      const exists = students.find((s) => s.matricula === matricula.trim())
+      if (exists) {
+        setError("Ja existe um aluno com essa matricula.")
+        return
+      }
+    } else {
+      const exists = students.find((s) => s.cpf === cpf.trim())
+      if (exists) {
+        setError("Ja existe um membro com esse CPF.")
+        return
+      }
     }
 
     addStudent({
       nome: nome.trim(),
-      matricula: matricula.trim(),
+      matricula: tipo === "estudante" ? matricula.trim() : "",
+      cpf: tipo === "natacao" ? cpf.trim() : undefined,
+      tipo,
       vencimentoAtestado,
     })
 
     setNome("")
     setMatricula("")
+    setCpf("")
     setVencimentoAtestado("")
     setSuccess(true)
 
@@ -79,11 +102,37 @@ export function RegisterStudentScreen() {
               </div>
               <div>
                 <CardTitle className="font-heading text-xl">Cadastrar Aluno</CardTitle>
-                <CardDescription>Registre um novo aluno no sistema esportivo</CardDescription>
+                <CardDescription>Registre um novo aluno ou membro no sistema</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
+            {/* Tipo toggle */}
+            <div className="mb-5 flex rounded-lg border border-border bg-muted/50 p-1">
+              <button
+                type="button"
+                onClick={() => setTipo("estudante")}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  tipo === "estudante"
+                    ? "bg-[hsl(152,55%,28%)] text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Estudante
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipo("natacao")}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  tipo === "natacao"
+                    ? "bg-[hsl(210,65%,48%)] text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Clube de Natacao
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="nome">Nome Completo</Label>
@@ -95,15 +144,27 @@ export function RegisterStudentScreen() {
                 />
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="matricula">Matricula</Label>
-                <Input
-                  id="matricula"
-                  placeholder="Ex: 2024004"
-                  value={matricula}
-                  onChange={(e) => setMatricula(e.target.value)}
-                />
-              </div>
+              {tipo === "estudante" ? (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="matricula">Matricula</Label>
+                  <Input
+                    id="matricula"
+                    placeholder="Ex: 2024004"
+                    value={matricula}
+                    onChange={(e) => setMatricula(e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="cpf">CPF</Label>
+                  <Input
+                    id="cpf"
+                    placeholder="Ex: 123.456.789-00"
+                    value={cpf}
+                    onChange={(e) => setCpf(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="vencimento">Vencimento do Atestado Medico</Label>
@@ -122,13 +183,13 @@ export function RegisterStudentScreen() {
               {success && (
                 <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
                   <CheckCircle2 className="h-4 w-4" />
-                  Aluno cadastrado com sucesso!
+                  Cadastro realizado com sucesso!
                 </div>
               )}
 
               <Button type="submit" size="lg" className="w-full text-base font-semibold">
                 <UserPlus className="h-4 w-4" />
-                Cadastrar Aluno
+                Cadastrar
               </Button>
             </form>
           </CardContent>
@@ -140,33 +201,47 @@ export function RegisterStudentScreen() {
         <div className="mb-4 flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           <h3 className="font-heading text-lg font-bold text-foreground">
-            Alunos Cadastrados ({students.length})
+            Cadastrados ({students.length})
           </h3>
         </div>
 
         <div className="flex flex-col gap-3">
           {students.map((student) => {
             const valido = isAtestadoValido(student.vencimentoAtestado)
+            const isNatacao = student.tipo === "natacao"
             return (
               <div
                 key={student.id}
-                className="flex items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-lg border border-border/60 bg-card p-4 shadow-sm"
               >
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${valido ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
-                  <GraduationCap className="h-5 w-5" />
+                {/* Icon */}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                  isNatacao
+                    ? "bg-secondary/10 text-secondary"
+                    : valido
+                      ? "bg-primary/10 text-primary"
+                      : "bg-destructive/10 text-destructive"
+                }`}>
+                  {isNatacao ? <Waves className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
                 </div>
+
+                {/* Info */}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-foreground">{student.nome}</p>
-                  <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="font-mono">{student.matricula}</span>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                    <span className="font-mono">
+                      {isNatacao ? student.cpf : student.matricula}
+                    </span>
                     <span className="flex items-center gap-1">
                       <CalendarClock className="h-3 w-3" />
                       {formatDate(student.vencimentoAtestado)}
                     </span>
                   </div>
                 </div>
+
+                {/* Status badge */}
                 <div
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold ${
                     valido
                       ? "bg-primary/10 text-primary"
                       : "bg-destructive/10 text-destructive"
@@ -174,11 +249,13 @@ export function RegisterStudentScreen() {
                 >
                   {valido ? "Valido" : "Vencido"}
                 </div>
+
+                {/* Edit button */}
                 <button
                   type="button"
                   onClick={() => setEditingStudent(student)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-secondary hover:bg-secondary hover:text-secondary-foreground"
-                  aria-label={`Editar ${student.nome}`}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:border-secondary hover:bg-secondary hover:text-white"
+                  aria-label={`Editar dados de ${student.nome}`}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
