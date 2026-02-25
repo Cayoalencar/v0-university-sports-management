@@ -54,8 +54,14 @@ function StudentCardView({ student }: { student: Student }) {
 
         {/* Avatar overlapping */}
         <div className="relative -mt-8 flex justify-center">
-          <div className={`flex h-16 w-16 items-center justify-center rounded-full border-4 border-card shadow-md ${isNatacao ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
-            {isNatacao ? <Waves className="h-8 w-8" /> : <User className="h-8 w-8" />}
+          <div className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-card shadow-md ${isNatacao ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
+            {student.foto ? (
+              <img src={student.foto} alt={student.nome} className="h-full w-full object-cover" />
+            ) : isNatacao ? (
+              <Waves className="h-8 w-8" />
+            ) : (
+              <User className="h-8 w-8" />
+            )}
           </div>
         </div>
 

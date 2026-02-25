@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
 import { UserPlus, CheckCircle2, Users, GraduationCap, CalendarClock, Pencil, Waves } from "lucide-react"
 import { EditStudentModal } from "@/components/edit-student-modal"
+import { PhotoUpload } from "@/components/photo-upload"
 import type { Student, StudentTipo } from "@/lib/types"
 
 function formatDate(dateStr: string) {
@@ -29,12 +30,13 @@ export function RegisterStudentScreen() {
   const [matricula, setMatricula] = useState("")
   const [cpf, setCpf] = useState("")
   const [vencimentoAtestado, setVencimentoAtestado] = useState("")
+  const [foto, setFoto] = useState<string | undefined>(undefined)
   const [tipo, setTipo] = useState<StudentTipo>("estudante")
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
-  function handleSaveEdit(id: string, data: { nome: string; matricula: string; cpf?: string; vencimentoAtestado: string }) {
+  function handleSaveEdit(id: string, data: { nome: string; matricula: string; cpf?: string; foto?: string; vencimentoAtestado: string }) {
     updateStudent(id, data)
     setEditingStudent(null)
   }
@@ -77,6 +79,7 @@ export function RegisterStudentScreen() {
       nome: nome.trim(),
       matricula: tipo === "estudante" ? matricula.trim() : "",
       cpf: tipo === "natacao" ? cpf.trim() : undefined,
+      foto,
       tipo,
       vencimentoAtestado,
     })
@@ -84,6 +87,7 @@ export function RegisterStudentScreen() {
     setNome("")
     setMatricula("")
     setCpf("")
+    setFoto(undefined)
     setVencimentoAtestado("")
     setSuccess(true)
 
@@ -134,6 +138,12 @@ export function RegisterStudentScreen() {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Photo upload */}
+              <div className="flex flex-col items-center gap-1">
+                <Label className="text-sm">Foto do Aluno</Label>
+                <PhotoUpload value={foto} onChange={setFoto} size="lg" />
+              </div>
+
               <div className="flex flex-col gap-2">
                 <Label htmlFor="nome">Nome Completo</Label>
                 <Input
@@ -214,15 +224,21 @@ export function RegisterStudentScreen() {
                 key={student.id}
                 className="flex items-center gap-3 rounded-lg border border-border/60 bg-card p-4 shadow-sm"
               >
-                {/* Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                {/* Avatar */}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full ${
                   isNatacao
                     ? "bg-secondary/10 text-secondary"
                     : valido
                       ? "bg-primary/10 text-primary"
                       : "bg-destructive/10 text-destructive"
                 }`}>
-                  {isNatacao ? <Waves className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
+                  {student.foto ? (
+                    <img src={student.foto} alt={student.nome} className="h-full w-full object-cover" />
+                  ) : isNatacao ? (
+                    <Waves className="h-5 w-5" />
+                  ) : (
+                    <GraduationCap className="h-5 w-5" />
+                  )}
                 </div>
 
                 {/* Info */}
