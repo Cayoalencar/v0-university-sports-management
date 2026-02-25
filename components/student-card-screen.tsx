@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useStudents } from "@/lib/students-context"
 import { Search, User, GraduationCap, CalendarClock, ShieldCheck, ShieldAlert, Activity, X, Waves } from "lucide-react"
+import { PhotoViewerModal } from "@/components/photo-viewer-modal"
 import type { Student, StudentTipo } from "@/lib/types"
 
 function isAtestadoValido(vencimento: string) {
@@ -23,6 +24,7 @@ function formatDate(dateStr: string) {
 }
 
 function StudentCardView({ student }: { student: Student }) {
+  const [showPhoto, setShowPhoto] = useState(false)
   const valido = isAtestadoValido(student.vencimentoAtestado)
   const isNatacao = student.tipo === "natacao"
 
@@ -52,9 +54,14 @@ function StudentCardView({ student }: { student: Student }) {
           </div>
         </div>
 
-        {/* Avatar overlapping */}
+        {/* Avatar overlapping - clicavel */}
         <div className="relative -mt-8 flex justify-center">
-          <div className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-card shadow-md ${isNatacao ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
+          <button
+            type="button"
+            onClick={() => setShowPhoto(true)}
+            className={`flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-card shadow-md transition-transform hover:scale-110 hover:shadow-lg ${isNatacao ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}
+            aria-label="Ver foto ampliada"
+          >
             {student.foto ? (
               <img src={student.foto} alt={student.nome} className="h-full w-full object-cover" />
             ) : isNatacao ? (
@@ -62,7 +69,7 @@ function StudentCardView({ student }: { student: Student }) {
             ) : (
               <User className="h-8 w-8" />
             )}
-          </div>
+          </button>
         </div>
 
         <CardContent className="flex flex-col items-center gap-5 px-6 pb-6 pt-4">
@@ -133,6 +140,16 @@ function StudentCardView({ student }: { student: Student }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Photo viewer modal */}
+      {showPhoto && (
+        <PhotoViewerModal
+          foto={student.foto || ""}
+          nome={student.nome}
+          onClose={() => setShowPhoto(false)}
+          isEmpty={!student.foto}
+        />
+      )}
     </div>
   )
 }
