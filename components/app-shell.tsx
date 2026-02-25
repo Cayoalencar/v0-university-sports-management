@@ -6,8 +6,10 @@ import { LoginScreen } from "@/components/login-screen"
 import { StudentCardScreen } from "@/components/student-card-screen"
 import { RegisterStudentScreen } from "@/components/register-student-screen"
 import { Button } from "@/components/ui/button"
-import { CreditCard, UserPlus, LogOut } from "lucide-react"
+import { CreditCard, UserPlus, LogOut, User } from "lucide-react"
 import Image from "next/image"
+import { useStudents } from "@/lib/students-context"
+import { PhotoViewerModal } from "@/components/photo-viewer-modal"
 import type { StudentTipo } from "@/lib/types"
 
 type Screen = "carteirinha" | "cadastro"
@@ -18,6 +20,7 @@ export function AppShell() {
   const [studentIdentifier, setStudentIdentifier] = useState<string | null>(null)
   const [studentTipo, setStudentTipo] = useState<StudentTipo>("estudante")
   const [currentScreen, setCurrentScreen] = useState<Screen>("carteirinha")
+  const [showPhotoViewer, setShowPhotoViewer] = useState(false)
 
   function handleLogin(userRole: "admin" | "student", identifier?: string, tipo?: StudentTipo) {
     setRole(userRole)
@@ -101,6 +104,15 @@ export function AppShell() {
                   </span>
                 )}
               </div>
+
+              {/* Avatar clicavel */}
+              <StudentAvatar
+                role={role}
+                studentIdentifier={studentIdentifier}
+                studentTipo={studentTipo}
+                onClick={() => setShowPhotoViewer(true)}
+              />
+
               <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair do sistema">
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -122,7 +134,100 @@ export function AppShell() {
             Centro Olimpico UnB - Sistema de Gerenciamento de Areas Esportivas
           </p>
         </footer>
+
+        {/* Photo viewer modal */}
+        {showPhotoViewer && role === "student" && (
+          <StudentPhotoModal
+            studentIdentifier={studentIdentifier}
+            studentTipo={studentTipo}
+            onClose={() => setShowPhotoViewer(false)}
+          />
+        )}
       </div>
     </StudentsProvider>
+  )
+}
+
+/* Sub-component: avatar no header */
+function StudentAvatar({
+  role,
+  studentIdentifier,
+  studentTipo,
+  onClick,
+}: {
+  role: "admin" | "student"
+  studentIdentifier: string | null
+  studentTipo: StudentTipo
+  onClick: () => void
+}) {
+  const { getStudentByMatricula, getStudentByCpf } = useStudents()
+
+  if (role === "admin") {
+    return (
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <User className="h-4 w-4" />
+      </div>
+    )
+  }
+
+  const student =
+    studentIdentifier
+      ? studentTipo === "natacao"
+        ? getStudentByCpf(studentIdentifier)
+        : getStudentByMatricula(studentIdentifier)
+      : undefined
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border-2 border-border bg-muted transition-all hover:border-primary hover:ring-2 hover:ring-primary/20"
+      aria-label="Ver foto do perfil"
+    >
+      {student?.foto ? (
+        <img src={student.foto} alt={student.nome} className="h-full w-full object-cover" />
+      ) : (
+        <User className="h-4 w-4 text-muted-foreground" />
+      )}
+    </button>
+  )
+}
+
+/* Sub-component: modal para visualizar a foto */
+function StudentPhotoModal({
+  studentIdentifier,
+  studentTipo,
+  onClose,
+}: {
+  studentIdentifier: string | null
+  studentTipo: StudentTipo
+  onClose: () => void
+}) {
+  const { getStudentByMatricula, getStudentByCpf } = useStudents()
+
+  const student =
+    studentIdentifier
+      ? studentTipo === "natacao"
+        ? getStudentByCpf(studentIdentifier)
+        : getStudentByMatricula(studentIdentifier)
+      : undefined
+
+  if (!student?.foto) {
+    return (
+      <PhotoViewerModal
+        foto=""
+        nome={student?.nome || "Sem foto"}
+        onClose={onClose}
+        isEmpty
+      />
+    )
+  }
+
+  return (
+    <PhotoViewerModal
+      foto={student.foto}
+      nome={student.nome}
+      onClose={onClose}
+    />
   )
 }

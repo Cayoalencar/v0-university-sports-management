@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { X, Save } from "lucide-react"
+import { PhotoUpload } from "@/components/photo-upload"
 import type { Student } from "@/lib/types"
 
 interface EditStudentModalProps {
   student: Student
-  onSave: (id: string, data: { nome: string; matricula: string; cpf?: string; vencimentoAtestado: string }) => void
+  onSave: (id: string, data: { nome: string; matricula: string; cpf?: string; foto?: string; vencimentoAtestado: string }) => void
   onClose: () => void
 }
 
@@ -18,6 +19,7 @@ export function EditStudentModal({ student, onSave, onClose }: EditStudentModalP
   const [nome, setNome] = useState(student.nome)
   const [matricula, setMatricula] = useState(student.matricula)
   const [cpf, setCpf] = useState(student.cpf || "")
+  const [foto, setFoto] = useState<string | undefined>(student.foto)
   const [vencimentoAtestado, setVencimentoAtestado] = useState(student.vencimentoAtestado)
   const [error, setError] = useState("")
 
@@ -54,6 +56,7 @@ export function EditStudentModal({ student, onSave, onClose }: EditStudentModalP
       nome: nome.trim(),
       matricula: matricula.trim(),
       cpf: cpf.trim() || undefined,
+      foto,
       vencimentoAtestado,
     })
   }
@@ -84,6 +87,12 @@ export function EditStudentModal({ student, onSave, onClose }: EditStudentModalP
 
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {/* Photo upload */}
+            <div className="flex flex-col items-center gap-1">
+              <Label className="text-sm">Foto</Label>
+              <PhotoUpload value={foto} onChange={setFoto} size="sm" />
+            </div>
+
             <div className="flex flex-col gap-2">
               <Label htmlFor="edit-nome">Nome Completo</Label>
               <Input
